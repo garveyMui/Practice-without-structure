@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 100
+int BuildTree(int ls[N],int rs[N],int *n);
+void FindFirstRoot(int a[N],int s[N],int n);
+void FindLeaf(int first,int a[N][N]);
+int i=0;
+int j[N]={0};
+int max=0;
+int ls[N],rs[N];
+
+
+int main()
+{
+    int first;
+    int n;
+    int a[N][N]={-1};
+    int k,l;
+    int flag=1;
+    first=BuildTree(ls,rs,&n);
+    FindLeaf(first,a);
+    for(k=0;k<=max;k++)
+    {
+        for(l=0;l<j[k];l++)
+        {
+            if(a[k][l]!=-1)
+            {
+                if(flag==1)
+                {
+                    printf("%d",a[k][l]);
+                    flag=2;
+                }
+                else
+                {
+                     printf(" %d",a[k][l]);
+                } 
+            }
+        }
+    }
+    return 0;
+}
+
+void FindLeaf(int first,int a[N][N])
+{
+    if(ls[first]==-1&&rs[first]==-1)
+    {
+        if(i>max)
+        {
+            max=i;
+        }
+        a[i][j[i]]=first;
+        j[i]++;
+    }
+    else
+    {
+        a[i][j[i]]=-1;
+        i++;
+        if(ls[first]!=-1)
+        {
+            FindLeaf(ls[first],a);
+        }
+        if(rs[first]!=-1)
+        {
+            FindLeaf(rs[first],a);
+        }
+        i--;
+    }
+}
+
+
+int BuildTree(int ls[N],int rs[N],int *n)
+{
+    int a[N]={0};
+    int i;
+    int firstRoot=0;
+    char Ls,Rs;
+    scanf("%d",n);
+    for(i=0;i<*n;i++)
+    {
+        getchar();
+        scanf("%c %c",&Ls,&Rs);
+        if(Ls!='-')
+        {
+            ls[i]=Ls-'0';
+        }
+        else
+        {
+            ls[i]=-1;
+        }
+        if(Rs!='-')
+        {
+            rs[i]=Rs-'0';
+        }
+        else
+        {
+            rs[i]=-1;
+        }
+    }
+    FindFirstRoot(a,ls,*n);
+    FindFirstRoot(a,rs,*n);
+    for(i=0;i<*n;i++)
+    {
+       if(a[i]==0)
+       {
+           firstRoot=i;
+           break;
+       }
+    }
+    return firstRoot;
+}
+void FindFirstRoot(int a[N],int s[N],int n)
+{
+    int i;
+    for(i=0;i<n;i++)
+    {
+        if(s[i]!=-1)
+        {
+            a[s[i]]=1;
+        }
+    }
+}
