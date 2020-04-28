@@ -1,0 +1,183 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 100
+int ReadTree(char data[N],int ls[N],int rs[N],int *n);
+void FindFirstRoot(int a[N],int s[N],int n);
+void CompareTree(int first1,int first2);
+char data1[N];
+int ls1[N],rs1[N];
+char data2[N];
+int ls2[N],rs2[N];
+int n[2];
+int flag=1;
+
+int main()
+{
+    int first1,first2;
+    first1=ReadTree(data1,ls1,rs1,&n[0]);
+    first2=ReadTree(data2,ls2,rs2,&n[1]);
+    if(n[0]!=0&&n[1]!=0)
+    {
+        CompareTree(first1,first2);
+    }
+    else if(n[0]==0&&n[1]==0)
+    {
+        flag=1;
+    }
+    else
+    {
+        flag=-1;
+    }
+   
+    if(flag==1)
+    {
+        printf("Yes");
+    }
+    else
+    {
+        printf("No");
+    }
+    return 0;
+}
+void CompareTree(int first1,int first2)
+{
+    if(data1[first1]==data2[first2])
+    {
+        if(ls1[first1]!=-1&&ls2[first2]!=-1&&rs1[first1]!=-1&&rs2[first2]!=-1)
+        {
+            if(data1[ls1[first1]]==data2[ls2[first2]])
+            {
+                if(data1[rs1[first1]]==data2[rs2[first2]])
+                {
+                    CompareTree(ls1[first1],ls2[first2]);
+                    CompareTree(rs1[first1],rs2[first2]);
+                }
+            }
+            else if(data1[ls1[first1]]==data2[rs2[first2]])
+            {
+                if(data1[rs1[first1]]==data2[ls2[first2]])
+                {
+                    CompareTree(ls1[first1],rs2[first2]);
+                    CompareTree(rs1[first1],ls2[first2]);
+                }
+            }
+            else
+            {
+                flag= -1;
+            }
+        }
+        else if(ls1[first1]==-1&&ls2[first2]==-1&&rs1[first1]!=-1&&rs2[first2]!=-1)
+        {
+            if(data1[rs1[first1]]==data2[rs2[first2]])
+            {
+                CompareTree(rs1[first1],rs2[first2]);
+            }
+            else
+            {
+                flag= -1;
+            }
+        }
+        else if(ls1[first1]==-1&&ls2[first2]!=-1&&rs1[first1]!=-1&&rs2[first2]==-1)
+        {
+            if(data1[rs1[first1]]==data2[ls2[first2]])
+            {
+                CompareTree(rs1[first1],ls2[first2]);
+            }
+            else
+            {
+                flag= -1;
+            }
+        }
+        else if(ls1[first1]!=-1&&ls2[first2]==-1&&rs1[first1]==-1&&rs2[first2]!=-1)
+        {
+            if(data1[ls1[first1]]==data2[rs2[first2]])
+            {
+                CompareTree(ls1[first1],rs2[first2]);
+            }
+            else
+            {
+                flag= -1;
+            }
+        }
+        else if(ls1[first1]!=-1&&ls2[first2]!=-1&&rs1[first1]==-1&&rs2[first2]==-1)
+        {
+            if(data1[ls1[first1]]==data2[ls2[first2]])
+            {
+                CompareTree(ls1[first1],ls2[first2]);
+            }
+            else
+            {
+                flag= -1;
+            }
+        }
+        else if(ls1[first1]==-1&&ls2[first2]==-1&&rs1[first1]==-1&&rs2[first2]==-1)
+        {
+            
+        }
+        else
+        {
+            flag= -1;
+        }
+    }
+    else
+    {
+       flag= -1;
+    }
+    
+}
+
+int ReadTree(char data[N],int ls[N],int rs[N],int *n)
+{
+    int a[N]={0};
+    
+    int i;
+    int firstRoot=0;
+    char Ls,Rs;
+    scanf("%d",n);
+    for(i=0;i<*n;i++)
+    {
+        getchar();
+        scanf("%c %c %c",&data[i],&Ls,&Rs);
+        if(Ls!='-')
+        {
+            ls[i]=Ls-'0';
+        }
+        else
+        {
+            ls[i]=-1;
+        }
+        if(Rs!='-')
+        {
+            rs[i]=Rs-'0';
+        }
+        else
+        {
+            rs[i]=-1;
+        }
+    }
+    FindFirstRoot(a,ls,*n);
+    FindFirstRoot(a,rs,*n);
+    for(i=0;i<*n;i++)
+    {
+       if(a[i]==0)
+       {
+           firstRoot=i;
+           break;
+       }
+    }
+    return firstRoot;
+}
+void FindFirstRoot(int a[N],int s[N],int n)
+{
+    int i;
+    for(i=0;i<n;i++)
+    {
+        if(s[i]!=-1)
+        {
+            a[s[i]]=1;
+        }
+    }
+}
