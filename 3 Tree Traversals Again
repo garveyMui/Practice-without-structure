@@ -1,0 +1,125 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 100
+int ls[N]={0},rs[N]={0};
+int flag=1;
+int BuildTree(int n,int operation[N],int data[N]);
+
+int Read(int operation[N],int data[N]);
+
+void PostOrder(int firstroot);
+int main()
+{
+    int n;
+    int firstRoot;
+    int operation[N], data[N]={0};;
+    n=Read(operation,data);
+    firstRoot=BuildTree(n,operation,data);
+    
+    PostOrder(firstRoot);
+    return 0;
+}
+void PostOrder(int firstroot)
+{
+    if(ls[firstroot]!=-1)
+    {
+        PostOrder(ls[firstroot]);
+    }
+    if(rs[firstroot]!=-1)
+    {
+        PostOrder(rs[firstroot]);
+    }
+    if(flag==2)
+    {
+        printf(" %d",firstroot);
+    }
+    else
+    {
+        printf("%d",firstroot);
+        flag=2;
+    }
+}
+
+
+int Read(int operation[N],int data[N])
+{
+    int n;
+    int i;
+    char op[N]="Push";
+    
+    scanf("%d",&n);
+    n*=2;
+    for(i=0;i<n;i++)
+    {
+        scanf("%s",op);
+        if(strncmp(op,"Push",4)==0)
+        {
+            operation[i]=1;
+            
+            scanf("%d",&data[i]);
+        }
+        else
+        {
+            operation[i]=-1;
+            
+        }
+    }
+    return n;
+}
+
+int BuildTree(int n,int operation[N],int data[N])
+{
+    int top=-1;
+    int temp=data[0];
+    int a[N];
+    int i;
+    int firstRoot=data[0];
+    for(i=0;i<n;i++)
+    {
+        if(operation[i]==1)
+        {
+            if(i-1>0&&operation[i-1]==-1)
+            {
+                rs[temp]=data[i];
+            }
+            if(operation[i+1]==1)
+            {
+                ls[data[i]]=data[i+1];
+            }
+            top++;
+            a[top]=data[i];
+            
+        }
+        else
+        {
+            temp=a[top];
+            a[top]=0;
+            top--;
+        }
+    }
+    for(i=1;i<=n/2;i++)
+    {
+        if(ls[i]==0)
+        {
+            ls[i]=-1;
+        }
+        if(rs[i]==0)
+        {
+            rs[i]=-1;
+        }
+    }
+/*    for(i=1;i<=n/2;i++)
+    {
+        printf("%d\t",ls[i]);
+    }
+    printf("\n");
+    for(i=1;i<=n/2;i++)
+    {
+        printf("%d\t",rs[i]);
+    }
+*/
+    return firstRoot;
+}
