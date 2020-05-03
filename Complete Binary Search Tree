@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 5000
+int tree[N][N];
+
+void InsertTree(int node, int lc[N], int rc[N]);
+void SelectionSort(int n, int a[N]);
+void BuildTree(int a[N], int n,int k,int i,int j);
+
+int main(int argc, char *argv[])
+{
+    int n,i;
+    int a[N];
+    
+    scanf("%d",&n);
+    for(i=1;i<=n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    SelectionSort(n,a); //small->large
+    int k=0;
+    int sum=0;
+    int tmp=2;
+    while(sum<n)
+    {
+        sum=tmp-1;
+        tmp*=2;
+        k++;
+    }
+    k--;
+    BuildTree(a,n,k,1,1);
+    int j;
+    int count=0;
+    for(i=1;i<=k+1;i++)
+    {
+        for(j=1;j<=pow(2,i-1)&&count<n;j++)
+        {
+            if(count==0)
+            {
+                printf("%d",tree[i][j]);
+                count++;
+            }
+            else
+            {
+                printf(" %d",tree[i][j]);
+                count++;
+            }
+        }
+    }
+    
+    
+    return 0;
+}
+void BuildTree(int a[N], int n,int k,int i,int j)
+{
+    int remain=n-pow(2,k)+1;
+    int n1=n;
+    int b[N];
+    int c;
+    if(remain>=pow(2,k-1))
+    {
+        tree[i][j]=a[(int)pow(2,k)];
+        n=(int)pow(2,k)-1;
+    }
+    else
+    {
+        tree[i][j]=a[(int)pow(2,k-1)+remain];
+        n=(int)pow(2,k-1)+remain-1;
+    }
+    n1=n1-n-1;
+    if(n>0)
+    {
+        for(c=1;c<=n;c++)
+        {
+            b[c]=a[c];
+        }
+       BuildTree(b, n, k-1, i+1, 2*j-1);
+    }
+    if(n1>0)
+    {
+        for(c=1;c<=n1;c++)
+        {
+            b[c]=a[c+n+1];
+        }
+        BuildTree(b, n1, k-1, i+1, 2*j);
+    }
+}
+
+void SelectionSort(int n, int a[N])
+{
+    int i,j;
+    int tmp,mark;
+    for(i=1;i<=n-1;i++)
+    {
+        mark=i;
+        for(j=i+1;j<=n;j++)
+        {
+            if(a[mark]>a[j])
+            {
+                mark=j;
+            }
+        }
+        if(mark!=i)
+        {
+            tmp=a[i];
+            a[i]=a[mark];
+            a[mark]=tmp;
+        }
+    }
+}
