@@ -1,0 +1,350 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 5000
+int lc[N]={0};
+int rc[N]={0};
+int root;
+int height;
+int tmp1=1;
+int fa[N]={0};
+void InsertTree(int node, int lc[N], int rc[N]);
+int Search(int node);
+int NewJudge(int node);
+void Rebalance(int signal, int lc[N], int rc[N], int fa[N]);
+int Identify(int a,int b);
+int Process(int father,int a[N],int b[N],int node);
+void Explore(int node);
+
+int main(int argc, char *argv[])
+{
+    int n;
+    int i,j;
+    int node;
+    int a[N];
+ //   int *p=a;
+    int signal=2;
+    
+    scanf("%d",&n);
+    scanf("%d",&root);
+    a[0]=root;
+    for(i=1;i<n;i++)
+    {
+        for(j=0;j<=4;j++)
+        {
+            fa[j]=0;
+        }
+        scanf("%d",&node);
+        a[i]=node;
+        InsertTree(node,lc,rc);
+        if(i>=2)
+        {
+            signal=NewJudge(node);
+        }
+        if(signal!=2)
+        {
+            Rebalance(signal,lc,rc,fa);
+        }
+    }
+    printf("%d",root);
+/*    printf("\n");
+    for(j=0;j<n;j++)
+    {
+        root=*p++;
+        printf("\n %3d lc%d\t rc%d\t",root,lc[root],rc[root]);
+        height=1;
+        tmp1=1;
+        Explore(root);
+        printf("\t%d",height);
+        
+    }*/
+    return 0;
+}
+void Explore(int node)
+{
+    
+    if(lc[node]!=0)
+    {
+        tmp1++;
+        height=tmp1>height?tmp1:height;
+        Explore(lc[node]);
+    }
+    if(lc[node]!=0)
+    {
+        tmp1--;
+    }
+    if(rc[node]!=0)
+    {
+        tmp1++;
+        height=tmp1>height?tmp1:height;
+        Explore(rc[node]);
+    }
+    if(rc[node]!=0)
+    {
+        tmp1--;
+    }
+}
+int NewJudge(int node)
+{
+    int lh,rh;
+    int father=node;
+    int unbalance=2;
+    while(father!=root)
+    {
+        father=Search(father);
+        if(lc[father]==0)
+        {
+            lh=0;
+        }
+        else
+        {
+            tmp1=1;
+            height=1;
+            Explore(lc[father]);
+            lh=height;
+            
+        }
+        if(rc[father]==0)
+        {
+            rh=0;
+        }
+        else
+        {
+            tmp1=1;
+            height=1;
+            Explore(rc[father]);
+            rh=height;
+        }
+        if(lh-rh>=2||lh-rh<=-2)
+        {
+            unbalance=-1;
+            break;
+        }
+    }
+    if(unbalance==-1)
+    {
+        if(lc[father]!=0&&lc[lc[father]]!=0)
+        {
+            if(Process(father, lc, lc, node)==1)
+            {
+                return 11;
+            }
+        }
+        if(lc[father]!=0&&rc[lc[father]]!=0)
+        {
+            if(Process(father, lc, rc, node)==1)
+            {
+                return 10;
+            }
+        }
+        if(rc[father]!=0&&lc[rc[father]]!=0)
+        {
+            if(Process(father, rc, lc, node)==1)
+            {
+                return 01;
+            }
+        }
+        if(rc[father]!=0&&rc[rc[father]]!=0)
+        {
+            if(Process(father, rc, rc, node)==1)
+            {
+                return 00;
+            }
+        }
+    }
+    return 2;
+}
+int Process(int father,int a[N],int b[N],int node)
+{
+    if(Identify(b[a[father]],node))
+    {
+        fa[0]=father;
+        fa[1]=a[father];
+        fa[2]=b[a[father]];
+        if(fa[0]!=root)
+        {
+            fa[4]=Search(fa[0]);
+        }
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int Identify(int a,int b)
+{
+    if(a==b)
+    {
+        return 1;
+    }
+    while(a!=0)
+    {
+        if(a>b)
+        {
+            a=lc[a];
+        }else
+        {
+            a=rc[a];
+        }
+        if(a==b)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+void Rebalance(int signal, int lc[N], int rc[N], int fa[N])
+{
+    if(signal==11)
+    {
+        lc[fa[0]]=rc[fa[1]];
+        rc[fa[1]]=fa[0];
+        if(fa[0]==root)
+        {
+            root=fa[1];
+        }
+        else
+        {
+            fa[4]=Search(fa[0]);
+            if(fa[0]==lc[fa[4]])
+            {
+                lc[fa[4]]=fa[1];
+            }
+            else
+            {
+                rc[fa[4]]=fa[1];
+            }
+        }
+    }
+    if(signal==00)
+    {
+       rc[fa[0]]=lc[fa[1]];
+       lc[fa[1]]=fa[0];
+       if(fa[0]==root)
+       {
+           root=fa[1];
+       }
+       else
+       {
+           fa[4]=Search(fa[0]);
+           if(fa[0]==lc[fa[4]])
+           {
+               lc[fa[4]]=fa[1];
+           }
+           else
+           {
+               rc[fa[4]]=fa[1];
+           }
+       }
+    }
+    if(signal==10)
+    {
+        rc[fa[1]]=lc[fa[2]];
+        lc[fa[0]]=rc[fa[2]];
+        
+        rc[fa[2]]=fa[0];
+        lc[fa[2]]=fa[1];
+        if(fa[0]==root)
+        {
+            root=fa[2];
+        }
+        else
+        {
+            fa[4]=Search(fa[0]);
+            if(fa[0]==lc[fa[4]])
+            {
+                lc[fa[4]]=fa[2];
+            }
+            else
+            {
+                rc[fa[4]]=fa[2];
+            }
+        }
+    }
+    if(signal==01)
+    {
+        lc[fa[1]]=rc[fa[2]];
+        rc[fa[0]]=lc[fa[2]];
+        
+        lc[fa[2]]=fa[0];
+        rc[fa[2]]=fa[1];
+        if(fa[0]==root)
+        {
+            root=fa[2];
+        }
+        else
+        {
+            fa[4]=Search(fa[0]);
+            if(fa[0]==lc[fa[4]])
+            {
+                lc[fa[4]]=fa[2];
+            }
+            else
+            {
+                rc[fa[4]]=fa[2];
+            }
+        }
+    }
+}
+
+int Search(int node)
+{
+    int fa2;
+    int tmp=root;
+    fa2=tmp;
+    while(1)
+    {
+        if(node<tmp)
+        {   if(lc[tmp]==node)
+            {   break;
+            }
+            else
+            {
+                tmp=lc[tmp];
+                fa2=tmp;
+            }
+        }
+        else
+        {
+            if(rc[tmp]==node)
+            {   break;
+            }
+            else
+            {
+                tmp=rc[tmp];
+                fa2=tmp;
+            }
+        }
+    }
+    return fa2;
+}
+void InsertTree(int node, int lc[N], int rc[N])
+{
+    int tmp=root;
+    while(1)
+    {
+        if(node<tmp)
+        {
+            if(lc[tmp]==0)
+            {   lc[tmp]=node;
+                break;
+            }
+            else
+            {   tmp=lc[tmp];
+            }
+        }
+        else
+        {
+            if(rc[tmp]==0)
+            {   rc[tmp]=node;
+                break;
+            }
+            else
+            {   tmp=rc[tmp];
+            }
+        }
+    }
+}
