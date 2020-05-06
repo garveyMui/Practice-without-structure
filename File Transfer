@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 2000
+
+int Check(int *a);
+void Union(int *a);
+int *Initialize(int n);
+
+int *Initialize(int n)
+{
+    int *a=malloc((n+1)*sizeof(int));
+    int i;
+    for(i=1;i<=n;i++)
+    {
+        a[i]=-1;
+    }
+    return a;
+}
+void Union(int *a)
+{
+    int i,j;
+    scanf("%d%d",&i,&j);
+    if(a[i]==-1&&a[j]<0)
+    {
+        a[i]=j;
+        a[j]--;
+    }
+    else if(a[i]<0&&a[j]==-1)
+    {
+        a[j]=i;
+        a[i]--;
+    }
+    else if(a[i]==-1&&a[j]>0)
+    {
+        a[i]=a[j];
+        a[a[j]]--;
+    }
+    else if(a[j]==-1&&a[i]>0)
+    {
+        a[j]=a[i];
+        a[a[i]]--;
+    }
+    else
+    {
+        while(a[i]>0)
+        {
+            i=a[i];
+        }
+        while(a[j]>0)
+        {
+            j=a[j];
+        }
+        if(a[i]<a[j])
+        {
+            a[j]=i;
+            a[i]--;
+        }
+        else
+        {
+            a[i]=j;
+            a[j]--;
+        }
+    }
+}
+int Check(int *a)
+{
+    int i,j;
+    scanf("%d%d",&i,&j);
+    while(a[i]>0)
+    {
+        i=a[i];
+    }
+    
+    while(a[j]>0)
+    {
+        j=a[j];
+    }
+    if(i==j)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int main(int argc, char *argv[])
+{
+    int n,*a;
+    char symbol='I';
+    scanf("%d",&n);
+    a=Initialize(n);
+    while(symbol!='S')
+    {
+        getchar();
+        symbol=getchar();
+        
+        if(symbol=='I')
+        {
+            Union(a);
+        }
+        if(symbol=='C')
+        {
+            if(Check(a))
+            {
+                printf("yes\n");
+            }
+            else
+            {
+                printf("no\n");
+            }
+        }
+    }
+    int netNumber=0,i;
+    for(i=1;i<=n;i++)
+    {
+       if(a[i]<0)
+       {
+           netNumber++;
+       }
+    }
+    if(netNumber==1)
+    {
+        printf("The network is connected.");
+    }
+    else
+    {
+        printf("There are %d components.",netNumber);
+    } 
+    return 0;
+}
