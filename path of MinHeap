@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 2000
+#define MinData -10001
+struct HeapStruct
+{
+    int *integer;
+    int Size;
+    int Capacity;
+};
+typedef struct HeapStruct *MinHeap;
+MinHeap Create(int MaxSize);
+void Insert(MinHeap H,int x);
+
+MinHeap Create(int MaxSize)
+{
+    MinHeap H = malloc(sizeof(struct HeapStruct));
+    H->integer = malloc((MaxSize+1)*sizeof(int));
+    H->Size = 0;
+    H->Capacity = MaxSize;
+    H->integer[0] = MinData;//哨兵
+    return H;
+}
+void Build(MinHeap H)
+{
+    int i;
+    int x;
+    for(i=1;i<=H->Capacity;i++)
+    {
+        scanf("%d",&x);
+        Insert(H,x);
+    }
+}
+void Insert(MinHeap H,int x)
+{
+    int i;
+    if(H->Size==0)
+    {
+        H->integer[1]=x;
+        H->Size++;
+    }
+    else
+    {
+        i=++H->Size;
+        for(;H->integer[i/2]>x;i/=2)
+        {
+            H->integer[i]=H->integer[i/2];
+        }
+        H->integer[i]=x;
+    }
+}
+
+
+int main(int argc, char *argv[])
+{
+    int n,m;
+    int a[N];
+    scanf("%d %d",&n,&m);
+    MinHeap H;
+    H=Create(n);
+    Build(H);
+    int i;
+    for(i=0;i<m;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    int flag=1;
+    for(i=0;i<m;i++)
+    {
+        while(a[i]>=1)
+        {
+            if(flag==1)
+            {
+                printf("%d",H->integer[a[i]]);
+                a[i]=a[i]/2;
+                flag=2;
+            }
+            else
+            {
+                printf(" %d",H->integer[a[i]]);
+                a[i]=a[i]/2;
+            }
+        }
+        printf("\n");
+        flag=1;
+    }
+    return 0;
+}
