@@ -1,0 +1,275 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 2000
+#define MinData -10001
+typedef struct TreeNode *HuffmanTree;
+struct TreeNode
+{
+    int Weight;
+    HuffmanTree Left, Right;
+};
+typedef struct HeapStruct *MinHeap;
+struct HeapStruct
+{
+    HuffmanTree *integer;
+    int Size;
+    int Capacity;
+};
+
+MinHeap Create(int MaxSize);
+void Insert(MinHeap H,HuffmanTree x);
+HuffmanTree DeleteMin(MinHeap H);
+int Search(HuffmanTree T, int path);
+void Recursive(HuffmanTree tree);
+int Check1(int n);
+int Check2(char *str[N],int n);
+void SelectionSort(int n);
+
+MinHeap Create(int MaxSize)
+{
+    MinHeap H = malloc(sizeof(struct HeapStruct));
+    H->integer = malloc((MaxSize+1)*sizeof(HuffmanTree));
+    H->Size = 0;
+    H->Capacity = MaxSize;
+    H->integer[0]=malloc(sizeof(struct TreeNode));
+    H->integer[0]->Weight = MinData;//哨兵
+    return H;
+}
+/*
+7
+A 1 B 1 C 1 D 3 E 3 F 6 G 6
+*/
+struct frequency
+{
+    char symbol;
+    int f;
+}code[N];
+void Build(MinHeap H)
+{
+    int i;
+    int x;
+    char a;
+    getchar();
+    for(i=1;i<=H->Capacity;i++)
+    {
+        H->integer[i]=malloc(sizeof(struct TreeNode));
+        scanf("%c %d",&a,&x);
+        H->integer[i]->Weight =x;
+        code[i].symbol=a;
+        code[i].f=x;
+        H->integer[i]->Left=NULL;
+        H->integer[i]->Right=NULL;
+        Insert(H,H->integer[i]);
+        getchar();
+    }
+    
+}
+void Insert(MinHeap H,HuffmanTree x)
+{
+    int i;
+    if(H->Size==0)
+    {
+        H->integer[1]=x;
+        H->Size++;
+    }
+    else
+    {
+        i=++H->Size;
+        for(;H->integer[i/2]->Weight>x->Weight;i/=2)
+        {
+            H->integer[i]=H->integer[i/2];
+        }
+        H->integer[i]=x;
+    }
+}
+int sum=0;
+
+HuffmanTree Huffman(MinHeap H)
+{
+    int count=H->Size,i;
+    for(i=1;i<count;i++)
+    {
+        HuffmanTree new=malloc(sizeof(struct TreeNode));
+        new->Left=DeleteMin(H);
+        new->Right=DeleteMin(H);
+        new->Weight=new->Left->Weight+new->Right->Weight;
+        Insert(H, new);
+    }
+    HuffmanTree final;
+    final=DeleteMin(H);
+    return final;
+}
+
+HuffmanTree DeleteMin(MinHeap H)
+{
+    int Parent, Child;
+    HuffmanTree MinItem, tmp;
+    MinItem = H->integer[1];
+    tmp = H->integer[H->Size--];
+    for(Parent=1;Parent*2<=H->Size;Parent=Child)
+    {    Child = Parent*2;
+        if((Child!=H->Size)&&(H->integer[Child]->Weight>H->integer[Child+1]->Weight))
+        {    Child++;
+        }
+        if(tmp->Weight<=H->integer[Child]->Weight)
+        {    break;
+        }
+        else
+        {    H->integer[Parent] = H->integer[Child];
+        }
+    }
+    H->integer[Parent] = tmp;
+    return MinItem;
+}
+
+int main(int argc, char *argv[])
+{
+    int n,m;
+    HuffmanTree tree;
+    scanf("%d",&n);
+    MinHeap H;
+    H=Create(n);
+    Build(H);
+    tree =Huffman(H);
+  //  Recursive(tree);
+    Search(tree, 0);
+    scanf("%d",&m);
+    int i;
+    for(i=0;i<m;i++)
+    {
+        if(Check1(n))
+        {
+            printf("Yes\n");
+        }
+        else
+        {
+            printf("No\n");
+        }
+    }
+    return 0;
+}
+struct
+{
+    unsigned long length;
+    int mother;
+}len[N];
+int Check2(char *str[N],int n)
+{
+    int i=1,k,l;
+    for(i=1;i<=n;i++)
+    {
+        len[i].length=strlen(str[i]);
+        len[i].mother=i;
+    }
+    SelectionSort(n);
+    for(k=2;k<=n;k++)
+    {
+        for(l=1;l<k;l++)
+        {
+            if(strncmp(str[len[l].mother],str[len[k].mother],len[l].length)==0)
+            {
+                return 0;
+            }
+        }
+    }
+    return 1;
+       
+}
+void SelectionSort(int n)
+{
+    int i,j,tmp1;
+    unsigned long tmp;
+    int mark;
+    for(i=1;i<n;i++)
+    {
+        mark=i;
+        for(j=i+1;j<=n;j++)
+        {
+            if(len[j].length<len[mark].length)
+            {
+                mark=j;
+            }
+        }
+        if(mark!=i)
+        {
+            tmp=len[i].length;
+            len[i].length=len[mark].length;
+            len[mark].length=tmp;
+            tmp1=len[i].mother;
+            len[i].mother=len[mark].mother;
+            len[mark].mother=tmp1;
+        }
+    }
+}
+int Check1(int n)
+{
+    int count=0;
+    int i,j,factor=1;
+    char symbol;
+    char *str[N];
+    for(i=1;i<=n;i++)
+    {
+        scanf(" %c",&symbol);
+        for(j=1;j<=n;j++)
+        {
+            if(symbol==code[j].symbol)
+            {
+                break;
+            }
+        }
+        factor=code[j].f;
+        str[i]=malloc(64);
+        scanf("%s",str[i]);
+        count+=strlen(str[i])*factor;
+    }
+    if(count==sum&&Check2(str,n))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void Recursive(HuffmanTree tree)
+{
+    
+    if(tree->Left!=NULL)
+    {
+        Recursive(tree->Left);
+    }
+    printf("%d ",tree->Weight);
+    if(tree->Right!=NULL)
+    {
+        Recursive(tree->Right);
+    }
+}
+
+int Search(HuffmanTree T, int path)
+{
+    if(T->Left!=NULL)
+    {
+        Search(T->Left,path+1);
+    }
+    if(T->Right!=NULL)
+    {
+        Search(T->Right,path+1);
+    }
+    if(T->Left==NULL&&T->Right==NULL)
+    {
+        sum+=path*T->Weight;
+    }
+    return sum;
+}
