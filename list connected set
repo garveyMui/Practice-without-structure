@@ -1,0 +1,206 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 2000
+#define MaxVertexNum 100
+#define Infinity 65535
+
+typedef int Vertex;
+typedef int WeightType;
+typedef char DataType;
+typedef struct ENode *PtrToENode;
+struct ENode
+{
+    Vertex V1, V2;
+    WeightType Weight;
+};
+typedef PtrToENode Edge;
+typedef struct GNode *PtrToGNode;
+struct GNode
+{
+    int Nv;
+    int Ne;
+    WeightType G[MaxVertexNum][MaxVertexNum];
+    DataType Data[MaxVertexNum];
+};
+typedef PtrToGNode MGraph;
+struct queueNode
+{
+    Vertex element;
+    struct queueNode *Next;
+};
+typedef struct queue *VQueue;
+struct queue
+{
+    struct queueNode *p1;
+    struct queueNode *p2;
+    int length;
+};
+
+MGraph CreateGraph(int VertexNum);
+void InsertEdge(MGraph Graph, Edge E);
+MGraph BuildGraph(void);
+VQueue CreateQueue(void);
+void Enqueue(Vertex V,VQueue queue);
+Vertex Dequeue(VQueue queue);
+void Search(MGraph Graph);
+void DeepFirstSearch(Vertex V,MGraph Graph);
+void BreathFirstSearch(Vertex V,MGraph Graph);
+int main(int argc, char *argv[])
+{
+    MGraph g;
+    g=BuildGraph();
+    Search(g);
+    
+    return 0;
+}
+MGraph CreateGraph(int VertexNum)
+{
+    Vertex V, W;
+    MGraph Graph;
+    Graph = (MGraph)malloc(sizeof(struct GNode));
+    Graph->Nv = VertexNum;
+    Graph->Ne = 0;
+    for(V=0;V<Graph->Nv;V++)
+        for(W=0;W<Graph->Nv;W++)
+            Graph->G[V][W]=Infinity;
+    for(V=0;V<Graph->Nv;V++)
+    {
+        Graph->Data[V]='-';
+    }
+    return Graph;
+}
+void InsertEdge(MGraph Graph, Edge E)
+{
+    Graph->G[E->V1][E->V2] = E->Weight;
+    Graph->G[E->V2][E->V1] = E->Weight;
+}
+MGraph BuildGraph(void)
+{
+    MGraph Graph;
+    Edge E;
+    
+    int Nv, i;
+    scanf("%d",&Nv);
+    Graph = CreateGraph(Nv);
+    scanf("%d",&(Graph->Ne));
+    if(Graph->Ne!=0)
+    {
+        E=(Edge)malloc(sizeof(struct ENode));
+        for(i=0;i<Graph->Ne;i++)
+        {
+            scanf("%d %d",&E->V1,&E->V2);
+            E->Weight=1;
+            InsertEdge(Graph,E);
+        }
+    }
+    return Graph;
+}
+void DeepFirstSearch(Vertex V,MGraph Graph)
+{
+    int i;
+    printf("%d ",V);
+    Graph->Data[V]='2';
+    for(i=0;i<Graph->Nv;i++)
+    {
+        if(Graph->Data[i]!='2'&&Graph->G[V][i]==1)
+        {
+            DeepFirstSearch(i, Graph);
+        }
+    }
+}
+
+void BreathFirstSearch(Vertex V,MGraph Graph)
+{
+    int i;VQueue queue;
+    Vertex tmp;
+    queue=CreateQueue();
+    Enqueue(V,queue);
+    while(queue->length!=0)
+    {
+        tmp=Dequeue(queue);
+        printf("%d ",tmp);
+        Graph->Data[tmp]='-';
+        for(i=0;i<Graph->Nv;i++)
+        {
+            if(Graph->Data[i]!='-'&&Graph->G[tmp][i]==1)
+            {
+                Graph->Data[i]='-';
+                Enqueue(i,queue);
+            }
+        }
+    }
+}
+Vertex Dequeue(VQueue queue)
+{
+    Vertex tmp;
+    tmp=queue->p1->element;
+    queue->p1=queue->p1->Next;
+    queue->length--;
+    return tmp;
+}
+
+void Enqueue(Vertex V,VQueue queue)
+{
+    
+    if(queue->length==0)
+    {
+        queue->p1=malloc(sizeof(struct queueNode));
+        queue->p2=queue->p1;
+        queue->p1->element=V;
+        queue->p1->Next=NULL;
+        queue->length++;
+    }
+    else if(queue->length==1)
+    {
+        queue->p2->Next=malloc(sizeof(struct queueNode));
+        queue->p2->Next->element=V;
+        queue->p2->Next->Next=NULL;
+        queue->p2=queue->p2->Next;
+        queue->p1->Next=queue->p2;
+        queue->length++;
+    }
+    else
+    {
+        queue->p2->Next=malloc(sizeof(struct queueNode));
+        queue->p2->Next->element=V;
+        queue->p2->Next->Next=NULL;
+        queue->p2=queue->p2->Next;
+        queue->length++;
+    }
+}
+
+VQueue CreateQueue(void)
+{
+    VQueue queue=malloc(sizeof(struct queue));
+    queue->length=0;
+    queue->p1=NULL;
+    queue->p2=NULL;
+    return queue;
+}
+
+void Search(MGraph Graph)
+{
+    int i;
+    for(i=0;i<Graph->Nv;i++)
+    {
+        if(Graph->Data[i]=='-')
+        {
+            printf("{ ");
+            DeepFirstSearch(i, Graph);
+            printf("}\n");
+        }
+    }
+    
+    for(i=0;i<Graph->Nv;i++)
+    {
+        if(Graph->Data[i]=='2')
+        {
+            printf("{ ");
+            BreathFirstSearch(i, Graph);
+            printf("}\n");
+        }
+    }
+}
