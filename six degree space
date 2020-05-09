@@ -1,0 +1,200 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 10002
+#define MaxVertexNum 10002
+#define Infinity 65535
+typedef int Vertex;
+typedef int WeightType;
+struct ENode
+{
+    Vertex V1,V2;
+    WeightType Weight;
+};
+typedef struct ENode *PtrToENode;
+typedef PtrToENode Edge;
+typedef struct AdjVNode *PtrToAdjVNode;
+struct AdjVNode
+{
+    Vertex AdjV;
+    WeightType Weight;
+    PtrToAdjVNode Next;
+};
+typedef struct Vnode
+{
+    PtrToAdjVNode FirstEdge;
+}AdjList[MaxVertexNum];
+typedef struct GNode *PtrToGNode;
+struct GNode
+{
+    int Nv;
+    int Ne;
+    AdjList G;
+};
+typedef PtrToGNode LGraph;
+int BreathFirstSearch(Vertex V,LGraph Graph);
+void StatisticGraph(LGraph Graph);
+LGraph CreateGraph(int VertexNum)
+{
+    Vertex V;
+    LGraph Graph;
+    Graph = malloc(sizeof(struct GNode));
+    Graph->Nv=VertexNum;
+    Graph->Ne=0;
+    for(V=1;V<=Graph->Nv;V++)
+    {
+        Graph->G[V].FirstEdge= NULL;
+    }
+    return Graph;
+}
+void InsertEdge(LGraph Graph, Edge E)
+{
+    PtrToAdjVNode NewNode;
+    NewNode=malloc(sizeof(struct AdjVNode));
+    NewNode->AdjV=E->V2;
+    NewNode->Weight=E->Weight;
+    NewNode->Next=Graph->G[E->V1].FirstEdge;
+    Graph->G[E->V1].FirstEdge=NewNode;
+    NewNode=malloc(sizeof(struct AdjVNode));
+    NewNode->AdjV=E->V1;
+    NewNode->Weight=E->Weight;
+    NewNode->Next=Graph->G[E->V2].FirstEdge;
+    Graph->G[E->V2].FirstEdge=NewNode;
+}
+LGraph BuildGraph()
+{
+    LGraph Graph;
+    Edge E;
+    int Nv,i;
+    scanf("%d",&Nv);
+    Graph = CreateGraph(Nv);
+    scanf("%d",&(Graph->Ne));
+    if(Graph->Ne!=0)
+    {
+        E=malloc(sizeof(struct ENode));
+        for(i=1;i<=Graph->Ne;i++)
+        {
+            scanf("%d %d",&E->V1,&E->V2);
+            E->Weight=1;
+            InsertEdge(Graph,E);
+        }
+    }
+    return Graph;
+}
+enum{False,True};
+int main(int argc ,char *argv[])
+{
+    LGraph Graph;
+    Graph=BuildGraph();
+    StatisticGraph(Graph);
+    return 0;
+}
+int Visited[N]={False};
+void StatisticGraph(LGraph Graph)
+{
+    int i; int sum=0;
+    Vertex V;
+    for(V=1;V<=Graph->Nv;V++)
+    {
+        for(i=1;i<=Graph->Nv;i++)
+        {
+            Visited[i]=False;
+        }
+        sum=BreathFirstSearch(V, Graph);
+        
+        printf("%d: %.2lf%%\n",V,sum*1.0/(Graph->Nv)*100);
+        sum=0;
+    }
+}
+typedef struct Node *PtrToNode;
+struct Node
+{
+    Vertex Data;
+    PtrToNode Next;
+};
+typedef PtrToNode Position;
+struct QNode
+{
+    Position Front,Rear;
+    int MaxSize;
+};
+typedef struct QNode *Queue;
+Vertex Dequeue(Queue Q)
+{
+    Position FrontCell;
+    Vertex FrontElem;
+    FrontCell = Q->Front;
+    if(Q->Front==Q->Rear)
+    {
+        Q->Front=Q->Rear=NULL;
+    }
+    else
+    {
+        Q->Front=Q->Front->Next;
+    }
+    FrontElem=FrontCell->Data;
+    free(FrontCell);
+    return FrontElem;
+}
+Queue CreateQueue(int MaxSize)
+{
+    Queue Q=malloc(sizeof(struct QNode));
+    Q->MaxSize=MaxSize;
+    Q->Front=Q->Rear=NULL;
+    return Q;
+}
+void Enqueue(Vertex V, Queue Q)
+{
+    if(Q->Front==NULL)
+    {
+        PtrToNode NewNode;
+        NewNode=malloc(sizeof(struct Node));
+        NewNode->Data=V;
+        NewNode->Next=NULL;
+        Q->Front=Q->Rear=NewNode;
+    }
+    else
+    {
+        PtrToNode NewNode;
+        NewNode=malloc(sizeof(struct Node));
+        NewNode->Data=V;
+        NewNode->Next=NULL;
+        Q->Rear->Next=NewNode;
+        Q->Rear=NewNode;
+    }
+}
+int BreathFirstSearch(Vertex V,LGraph Graph)
+{
+    int level=0,count=1,last1,last2=V;
+    Queue Q;
+    Q=CreateQueue(MaxVertexNum);
+    Enqueue(V,Q);
+    Visited[V]=True;
+    PtrToAdjVNode W;
+    while(Q->Front!=NULL)
+    {
+        V=Dequeue(Q);
+        for(W=Graph->G[V].FirstEdge;W!=NULL;W=W->Next)
+        {
+            if(Visited[W->AdjV]==False)
+            {
+                Enqueue(W->AdjV, Q);
+                Visited[W->AdjV]=True;
+                count++;
+                last1=W->AdjV;
+            }
+        }
+        if(V==last2)
+        {
+            level++;
+            last2=last1;
+        }
+        if(level==6)
+        {
+            break;
+        }
+    }
+    return count;
+}
