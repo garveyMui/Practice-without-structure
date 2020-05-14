@@ -1,0 +1,256 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 10002
+#define MaxVertexNum 200
+#define Infinity 65535
+typedef int Vertex;
+typedef int WeightType;
+typedef char DataType;
+
+typedef struct ENode *PtrToENode;
+struct ENode
+{
+    Vertex V1, V2;
+    WeightType Weight;
+};
+typedef PtrToENode Edge;
+
+typedef struct GNode *PtrToGNode;
+struct GNode
+{
+    int Nv;
+    int Ne;
+    WeightType G[MaxVertexNum][MaxVertexNum];
+    DataType Data[MaxVertexNum];
+};
+typedef PtrToGNode MGraph;
+typedef struct
+{
+    int num;
+    int max;
+}Path;
+typedef enum{False,True,Error=-1} Bool;
+
+void SelectSort(Path maxPath[],int n);
+Bool Dijkstra(MGraph Graph, int dist[],int path[],Vertex S,Path maxPath[]);
+Vertex FindMinDist(MGraph Graph,int dist[],int collected[]);
+MGraph BuildGraph(void);
+void InsertEdge(MGraph Graph, Edge E);
+MGraph CreateGraph(int VertexNum);
+void Search(MGraph Graph,int i,int visited[]);
+
+MGraph CreateGraph(int VertexNum)
+{
+    Vertex V,W;
+    MGraph Graph;
+    Graph = (MGraph)malloc(sizeof(struct GNode));
+    Graph->Nv=VertexNum;
+    Graph->Ne=0;
+    for(V=1;V<=Graph->Nv;V++)
+        for(W=1;W<=Graph->Nv;W++)
+            Graph->G[V][W]=Infinity;
+    return Graph;
+}
+
+void InsertEdge(MGraph Graph, Edge E)
+{
+    Graph->G[E->V1][E->V2]=E->Weight;
+    Graph->G[E->V2][E->V1]=E->Weight;
+}
+MGraph BuildGraph(void)
+{
+    MGraph Graph;
+    Edge E;
+    Vertex V;
+    int Nv,i;
+    scanf("%d",&Nv);
+    Graph=CreateGraph(Nv);
+    scanf("%d",&(Graph->Ne));
+    if(Graph->Ne!=0)
+    {
+        E=(Edge)malloc(sizeof(struct ENode));
+        for(i=0;i<Graph->Ne;i++)
+        {
+            scanf("%d %d %d",&E->V1,&E->V2,&E->Weight);
+            InsertEdge(Graph, E);
+        }
+    }
+    return Graph;
+}
+
+Vertex FindMinDist(MGraph Graph,int dist[],int collected[])
+{
+    Vertex MinV,V;
+    int MinDist = Infinity;
+    for(V=1;V<=Graph->Nv;V++)
+    {
+        if(collected[V]==-1&&dist[V]<MinDist)
+        {
+            MinDist=dist[V];
+            MinV=V;
+        }
+    }
+ //   printf(" Min%d,%d",MinDist,MinV);
+    if(MinDist<Infinity)
+    {
+        return MinV;
+    }
+    else return Error;
+}
+Bool Dijkstra(MGraph Graph, int dist[],int path[],Vertex S,Path maxPath[])
+{
+    int collected[MaxVertexNum];
+    Vertex V,W;
+    for(V=1;V<=Graph->Nv;V++)
+    {
+        dist[V]=Graph->G[S][V];
+     //   printf("V=%d %d\t",V,dist[V]);
+        if(dist[V]<Infinity)
+        {
+            path[V]=S;
+        }
+        else
+        {
+            path[V]=-1;
+        }
+        collected[V]=-1;
+        
+      //  printf("%d\t",collected[V]);
+     //   printf("\n");
+    }
+    dist[S]=0;
+    collected[S]=True;
+    while(1)
+    {
+        V=FindMinDist(Graph, dist, collected);
+      //  printf(" dist%d ",dist[V]);
+               
+        if(V==Error)
+            break;
+        maxPath[S].max=dist[V];
+        if(V!=-1)
+        {
+            
+        }
+        collected[V]=True;
+      //  printf(" 顺序%d ",V);
+        for(W=1;W<=Graph->Nv;W++)
+        {
+            if(collected[W]==-1&&Graph->G[V][W]<Infinity)
+            {
+                if(Graph->G[V][W]<0)
+                    return False;
+                if(dist[V]+Graph->G[V][W]<dist[W])
+                {
+                    dist[W]=dist[V]+Graph->G[V][W];
+                    path[W]=V;
+                }
+            }
+        }
+    }
+   // printf("max%d num%d\n",maxPath[S].max,maxPath[S].num);
+    return True;
+}
+void SelectSort(Path maxPath[],int n)
+{
+    int i,j,mark,min;
+    Path tmp;
+    for(i=1;i<=n-1;i++)
+    {
+        mark=i;
+        min=maxPath[i].max;
+        for(j=i+1;j<n;j++)
+        {
+            if(maxPath[j].max<maxPath[mark].max)
+            {
+                mark=j;
+                
+            }
+        }
+        if(mark!=i)
+        {
+            tmp=maxPath[i];
+            maxPath[i]=maxPath[mark];
+            maxPath[mark]=tmp;
+        }
+    }
+}
+
+int main(int argc,char* argv[])
+{
+    MGraph Graph;
+    int dist[N],path[N],i,j;
+    Path maxPath[N];
+    Graph=BuildGraph();
+    for(i=1;i<=Graph->Nv;i++)
+    {
+        maxPath[i].num=i;
+        Dijkstra(Graph, dist, path, i, maxPath);
+        for(j=1;j<=Graph->Nv;j++)
+        {
+            dist[j]=Infinity;
+            path[j]=-1;
+        }
+    }
+    SelectSort(maxPath,Graph->Nv);
+    int visited[N]={0};
+    Search(Graph,maxPath[1].num,visited);
+    int flag=1;
+    for(j=1;j<=Graph->Nv;j++)
+    {
+        if(visited[j]!=1)
+        {
+            flag=-1;
+            break;
+        }
+    }
+    int minNumber=1,k;
+    
+    for(k=1;k<=Graph->Nv;k++)
+    {
+        if(maxPath[k].max==maxPath[1].max&&
+           maxPath[k].num<minNumber)
+        {
+            minNumber=k;
+        }
+        if(maxPath[k].max>maxPath[1].max)
+        {
+            break;
+        }
+    }
+    if(flag==1)
+    {
+        
+        printf("%d %d",maxPath[minNumber].num,maxPath[minNumber].max);
+    }
+    else
+    {
+        printf("0");
+    }
+    
+    return 0;
+}
+
+void Search(MGraph Graph,int i,int visited[])
+{
+    int j;
+    visited[i]=1;
+    for(j=1;j<=Graph->Nv;j++)
+    {
+        if(Graph->G[i][j]<Infinity&&visited[j]!=1)
+        {
+            Search(Graph,j,visited);
+        }
+    }
+}
