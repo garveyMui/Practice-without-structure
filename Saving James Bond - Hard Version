@@ -138,27 +138,6 @@ Vertex FindMinDist(MGraph Graph,int dist[],int collected[])
     else
         return -1;
 }
-void FirstMinimum(int V, int W)
-{
-    int i,pre1,pre2;
-    i=V;pre1=V;
-    while(path[path[i]]!=-1)
-    {
-        pre1=path[i];
-        i=pre1;
-    }
-    
-    i=W;pre2=W;
-    while(path[path[i]]!=-1)
-    {
-        pre2=path[i];
-        i=pre2;
-    }
-    if(pow(c[pre1].i,2)+pow(c[pre1].j,2)<pow(c[pre2].i,2)+pow(c[pre2].j,2))
-    {
-        path[W]=V;
-    }
-}
 
 Vertex Dijkstra(MGraph Graph,int dist[],int path[],Vertex S,int maxPath[],struct coordinate c[N],int d)
 {
@@ -200,10 +179,6 @@ Vertex Dijkstra(MGraph Graph,int dist[],int path[],Vertex S,int maxPath[],struct
         {
             if(collected[W]==-1&&Graph->G[V][W]<Infinity)
             {
-                if(dist[V]+Graph->G[V][W]==dist[W])
-                {
-                    FirstMinimum(V,W);
-                }
                 if(dist[V]+Graph->G[V][W]<dist[W])
                 {
                     dist[W]=dist[V]+Graph->G[V][W];
@@ -212,7 +187,7 @@ Vertex Dijkstra(MGraph Graph,int dist[],int path[],Vertex S,int maxPath[],struct
             }
         }
     }
-   // printf("\n");
+
     return V;
 }
 
@@ -243,8 +218,8 @@ int FindMinimumFirst(struct MinDist dis[N],struct coordinate c[N])
     int i,mark=1;
     for(i=1;dis[i].Distance==dis[1].Distance;i++)
     {
-        if(sqrt(pow(c[dis[i].S].i,2)+pow(c[dis[i].S].i,2))<
-           sqrt(pow(c[dis[mark].S].i,2)+pow(c[dis[mark].S].i,2)))
+        if(pow(c[dis[i].S].i,2)+pow(c[dis[i].S].j,2)<
+           pow(c[dis[mark].S].i,2)+pow(c[dis[mark].S].j,2))
         {
             mark=i;
         }
