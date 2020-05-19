@@ -1,0 +1,158 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <time.h>
+#define N 1000
+#define MaxVertexNum 600
+#define Infinity 65535
+typedef int Vertex;
+typedef struct
+{
+    int length;
+    int toll;
+}WeightType;
+struct ENode
+{
+    Vertex V1,V2;
+    WeightType Weight;
+};
+typedef struct ENode *PtrToENode;
+typedef PtrToENode Edge;
+struct GNode
+{
+    int Nv,Ne;
+    WeightType Weight[MaxVertexNum][MaxVertexNum];
+    Vertex S,D;
+};
+typedef struct GNode *PtrToGNode;
+typedef PtrToGNode MGraph;
+
+MGraph CreatGraph(Vertex VerNum)
+{
+    Vertex V,W;
+    MGraph Graph;
+    Graph=malloc(sizeof(struct GNode));
+    Graph->Nv=VerNum;
+    Graph->Ne=0;
+    for(V=1;V<=VerNum;V++)
+    {
+        for(W=1;W<=VerNum;W++)
+        {
+            Graph->Weight[V][W].length=Infinity;
+            Graph->Weight[V][W].toll=Infinity;
+        }
+    }
+    return Graph;
+}
+void InsertEdge(MGraph G,Edge E)
+{
+    G->Weight[E->V1+1][E->V2+1].length=E->Weight.length;
+    G->Weight[E->V1+1][E->V2+1].toll=E->Weight.toll;
+    G->Weight[E->V2+1][E->V1+1].length=E->Weight.length;
+    G->Weight[E->V2+1][E->V1+1].toll=E->Weight.toll;
+}
+
+MGraph BuildGraph()
+{
+    MGraph G;
+    Edge E;
+    E=malloc(sizeof(struct ENode));
+    int n,m,s,d;
+    scanf("%d %d %d %d",&n,&m,&s,&d);
+    G=CreatGraph(n);
+    G->Ne=m;G->S=s+1;G->D=d+1;
+    int i;
+    for(i=1;i<=G->Ne;i++)
+    {
+        scanf("%d %d %d %d",&E->V1,&E->V2,&E->Weight.length,&E->Weight.toll);
+        InsertEdge(G,E);
+    }
+    return G;
+}
+
+Vertex FindMinDist(MGraph G,int dist[],int collected[])
+{
+    Vertex min=-1,i;
+    int MinDist=Infinity;
+    for(i=1;i<=G->Nv;i++)
+    {
+        if(collected[i]==-1&&dist[i]<MinDist)
+        {
+            MinDist=dist[i];
+            min=i;
+        }
+    }
+    return min;
+}
+
+void Dijkstra(MGraph G,int dist[],int cost[],int path[],Vertex S)
+{
+    int collected[MaxVertexNum];
+    Vertex V,W;
+    for(V=1;V<=G->Nv;V++)
+    {
+        dist[V]=G->Weight[S][V].length;
+        cost[V]=G->Weight[S][V].toll;
+        if(dist[V]!=Infinity)
+        {
+            path[V]=S;
+        }
+        else
+        {
+            path[V]=-1;
+        }
+        collected[V]=-1;
+    }
+    collected[S]=1;
+    path[S]=-1;
+    dist[S]=0;
+    while(1)
+    {
+        V=FindMinDist(G,dist,collected);
+        collected[V]=1;
+        dist[0]=dist[V];
+        
+        for(W=1;W<=G->Nv;W++)
+        {
+            if(collected[W]==-1&&G->Weight[V][W].length<Infinity)
+            {
+                if(dist[V]+G->Weight[V][W].length<dist[W])
+                {
+                    dist[W]=dist[V]+G->Weight[V][W].length;
+                    // printf("%d ",G->Weight[V][W].length);
+                    // printf("V%d W%d %d\n",V,W,dist[W]);
+                    path[W]=V;
+                    cost[W]=cost[V]+G->Weight[V][W].toll;                    
+                }
+                if(dist[V]+G->Weight[V][W].length==dist[W]&&
+                   cost[V]+G->Weight[V][W].toll<cost[W])
+                {
+                     cost[W]=cost[V]+G->Weight[V][W].toll;
+                }
+            }
+        }
+        if(collected[G->D]==1)
+        {
+            printf("%d %d",dist[G->D],cost[G->D]);
+            break;
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    MGraph G;
+    G=BuildGraph();
+    int dist[N],cost[N],path[N];
+    Dijkstra(G, dist, cost, path, G->S);
+    return 0;
+}
