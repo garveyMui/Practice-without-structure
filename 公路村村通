@@ -1,0 +1,190 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define MaxVerNum 1000
+#define Infinity 65535
+typedef int Vertex;
+typedef int WeightType;
+struct ENode
+{
+    Vertex V1,V2;
+    WeightType Weight;
+};
+typedef struct ENode *PtrToENode;
+typedef PtrToENode Edge;
+struct MGNode
+{
+    int Nv,Ne;
+    WeightType G[MaxVerNum][MaxVerNum];
+};
+typedef struct MGNode *PtrToMGNode;
+typedef PtrToMGNode MGraph;
+typedef struct AdjVNode *PtrToAdjVNode;
+struct AdjVNode
+{
+    Vertex V;
+    WeightType Weight;
+    PtrToAdjVNode Next;
+};
+typedef struct LVNode
+{
+    PtrToAdjVNode FirstEdge;
+}AdjList[MaxVerNum];
+typedef struct LGNode *PtrToLGNode;
+struct LGNode
+{
+    int Nv,Ne;
+    AdjList G;
+};
+typedef PtrToLGNode LGraph;
+
+MGraph CreatGraph(int VerNum)
+{
+    Vertex V,W;
+    MGraph Graph;
+    Graph=(MGraph)malloc(sizeof(struct MGNode));
+    Graph->Nv=VerNum;
+    Graph->Ne=0;
+    for(V=1;V<=Graph->Nv;V++)
+    {
+        for(W=1;W<=Graph->Nv;W++)
+        {
+            Graph->G[V][W]=Infinity;
+        }
+    }
+    return Graph;
+}
+void InsertGraph(MGraph G, Edge E)
+{
+    G->G[E->V1][E->V2]=E->Weight;
+    G->G[E->V2][E->V1]=E->Weight;
+}
+MGraph BuildGraph()
+{
+    int n,m;
+    scanf("%d %d",&n,&m);
+    MGraph G;
+    G=CreatGraph(n);
+    G->Ne=m;
+    Edge E;
+    E=malloc(sizeof(struct ENode));
+    int i;
+    for(i=0;i<G->Ne;i++)
+    {
+        scanf("%d %d %d",&E->V1,&E->V2,&E->Weight);
+        InsertGraph(G,E);
+    }
+    return G;
+}
+LGraph CreateLGraph(int VerNum)
+{
+    Vertex V;
+    LGraph G;
+    G=(LGraph)malloc(sizeof(struct LGNode));
+    G->Nv=VerNum;
+    G->Ne=0;
+    for(V=1;V<G->Nv;V++)
+        G->G[V].FirstEdge=NULL;
+    return G;
+}
+void InsertEdge(LGraph G,Edge E)
+{
+    PtrToAdjVNode NewNode;
+    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode));
+    NewNode->V=E->V2;
+    NewNode->Weight = E->Weight;
+    NewNode->Next=G->G[E->V1].FirstEdge;
+    G->G[E->V1].FirstEdge=NewNode;
+    
+    NewNode = (PtrToAdjVNode)malloc(sizeof(struct AdjVNode));
+    NewNode->V=E->V1;
+    NewNode->Weight = E->Weight;
+    NewNode->Next=G->G[E->V2].FirstEdge;
+    G->G[E->V2].FirstEdge=NewNode;
+}
+Vertex FindMinDist(MGraph G,WeightType dist[])
+{
+    Vertex MinV,V;
+    WeightType MinDist = Infinity;
+    for(V=1;V<=G->Nv;V++)
+    {
+        if(dist[V]!=0&&dist[V]<MinDist)
+        {
+            MinDist=dist[V];
+            MinV=V;
+        }
+    }
+    if(MinDist<Infinity)
+        return MinV;
+    else return -1;
+}
+
+int Prim(MGraph G,LGraph MST)
+{
+    WeightType dist[MaxVerNum],TotalWeight;
+    Vertex parent[MaxVerNum],V,W;
+    int VCount;
+    Edge E;
+    for(V=1;V<=G->Nv;V++)
+    {
+        dist[V]=G->G[1][V];
+        parent[V]=1;
+    }
+    TotalWeight = 0;
+    VCount = 0;
+    MST = CreateLGraph(G->Nv);
+    E = (Edge)malloc(sizeof(struct ENode));
+    dist[1]=0;
+    VCount++;
+    parent[1]=-1;
+    while(1)
+    {
+        V = FindMinDist(G,dist);
+        if(V==-1)
+            break;
+        E->V1=parent[V];
+        E->V2=V;
+        E->Weight=dist[V];
+        InsertEdge(MST, E);
+        TotalWeight+=dist[V];
+        dist[V]=0;
+        VCount++;
+        for(W=1;W<=G->Nv;W++)
+        {
+            if(dist[W]!=0&&G->G[V][W]<Infinity)
+            {
+                if(G->G[V][W]<dist[W])
+                {
+                    dist[W]=G->G[V][W];
+                    parent[W]=V;
+                }
+            }
+        }
+    }
+    if(VCount<G->Nv)
+    {
+        printf("-1");
+        TotalWeight=-1;
+    }
+    return TotalWeight;
+}
+int main(int argc,char *argv[])
+{
+    MGraph G;
+    G=BuildGraph();
+    int cost;
+    LGraph MST;
+    MST=CreateLGraph(G->Nv);
+    cost=Prim(G, MST);
+    if(cost!=-1)
+    {
+        printf("%d",cost);
+    }
+    return 0;
+}
