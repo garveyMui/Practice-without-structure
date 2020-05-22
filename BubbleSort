@@ -1,0 +1,57 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+typedef struct node *PtrToNode;
+struct node
+{
+    int Data;
+    PtrToNode Next;
+    int Num;
+};
+void BubbleSort(PtrToNode First,int n)
+{
+    PtrToNode i;
+    int tmp;
+    while(n>0)
+    {
+        for(i=First;i->Num<n;i=i->Next)
+        {
+            if(i->Data>i->Next->Data)
+            {
+                tmp=i->Data;
+                i->Data=i->Next->Data;
+                i->Next->Data=tmp;
+            }
+        }
+        n--;
+    }
+}
+
+int main(int argc,char *argv[])
+{
+    int n;
+    scanf("%d",&n);
+    int i;
+    PtrToNode NewNode,tmp=NULL;
+    for(i=0;i<n;i++)
+    {
+        NewNode=malloc(sizeof(struct node));
+        scanf("%d",&NewNode->Data);
+        NewNode->Next=tmp;
+        NewNode->Num=n-i;
+        tmp=NewNode;
+    }
+    BubbleSort(tmp,n);
+    printf("%d",tmp->Data);
+    for(tmp=tmp->Next;tmp!=NULL;tmp=tmp->Next)
+    {
+        printf(" %d",tmp->Data);
+    }
+    return 0;
+}
