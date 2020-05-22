@@ -1,0 +1,301 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define MaxVerNum 150
+#define N 150
+#define Infinity 65535
+typedef int Vertex;
+typedef int WeightType;
+struct ENode
+{
+    Vertex V1,V2;
+    WeightType Weight;
+};
+typedef struct ENode *PtrToENode;
+typedef PtrToENode Edge;
+typedef struct AdjacentVNode *PtrToAdjVNode;
+struct AdjacentVNode
+{
+    Vertex V;
+    WeightType Weight;
+    PtrToAdjVNode Next;
+};
+struct VNode
+{
+    PtrToAdjVNode FirstEdge;
+};
+typedef struct GNode *LGraph;
+struct GNode
+{
+    int Nv,Ne;
+    struct VNode AdjList[N];
+    LGraph G2;
+};
+
+
+LGraph CreateGraph(int VerNum)
+{
+    LGraph G;
+    G=malloc(sizeof(struct GNode));
+    G->Nv=VerNum;
+    G->Ne=0;
+    Vertex V;
+    for(V=1;V<=G->Nv;V++)
+    {
+        G->AdjList[V].FirstEdge=NULL;
+    }
+    return G;
+}
+void InsertEdge(LGraph G, Edge E)
+{
+    PtrToAdjVNode NewNode;
+    NewNode = malloc(sizeof(struct AdjacentVNode));
+    NewNode->V=E->V2;
+    NewNode->Weight=E->Weight;
+    NewNode->Next=G->AdjList[E->V1].FirstEdge;
+    G->AdjList[E->V1].FirstEdge=NewNode;
+}
+LGraph BuildGraph()
+{
+    LGraph G[2];
+    int n,m;
+    scanf("%d",&n);
+    G[0]=CreateGraph(n);
+    G[1]=CreateGraph(n);
+    scanf("%d",&m);
+    G[0]->Ne=m;
+    G[1]->Ne=m;
+    Edge E;
+    E=malloc(sizeof(struct ENode));
+    Vertex V;
+    for(V=1;V<=G[0]->Ne;V++)
+    {
+        scanf("%d %d %d",&E->V1,&E->V2,&E->Weight);
+        InsertEdge(G[0],E);
+        Vertex tmp;
+        tmp=E->V1;
+        E->V1=E->V2;
+        E->V2=tmp;
+        InsertEdge(G[1],E);
+    }
+    G[0]->G2=G[1];
+    return G[0];
+}
+struct MGNode
+{
+    int Nv,Ne;
+    WeightType G[MaxVerNum][MaxVerNum];
+};
+typedef struct MGNode *PtrToMGNode;
+typedef PtrToMGNode MGraph;
+
+struct act
+{
+    Vertex Num;
+    int Earliest;
+    int Lastest;
+};
+typedef enum {False,True} Bool;
+typedef struct Node *PtrToNode;
+struct Node
+{
+    struct act Data;
+    PtrToNode Next;
+};
+typedef PtrToNode Position;
+struct QNode
+{
+    Position Front,Rear;
+    int MaxSize;
+};
+typedef struct QNode *Queue;
+Queue CreateQueue(int MaxSize)
+{
+    Queue Q;
+    Q=malloc(sizeof(struct QNode));
+    Q->MaxSize=MaxSize;
+    Q->Front=NULL;
+    Q->Rear=NULL;
+    return Q;
+}
+Bool IsEmpty(Queue Q)
+{
+    if(Q->Front==NULL)
+    {
+        return True;
+    }
+    else
+        return False;
+}
+void Enqueue(Queue Q,struct act V)
+{
+    PtrToNode NewNode;
+    NewNode=malloc(sizeof(struct Node));
+    NewNode->Data=V;
+    NewNode->Next=NULL;
+    if(!IsEmpty(Q))
+    {
+        Q->Rear->Next=NewNode;
+        Q->Rear=NewNode;
+    }
+    else
+    {
+        Q->Front=NewNode;
+        Q->Rear=NewNode;
+    }
+}
+struct act Dequeue(Queue Q)
+{
+    Position FrontCell;
+    FrontCell=Q->Front;
+    if(Q->Front==Q->Rear)
+    {
+        Q->Front=NULL;
+        Q->Rear=NULL;
+    }
+    else
+    {
+        Q->Front=Q->Front->Next;
+    }
+    struct act FrontElem;
+    FrontElem=FrontCell->Data;
+    free(FrontCell);
+    return FrontElem;
+}
+void FindKeyAct(struct act V[],LGraph G,int max);
+Bool TopSort(LGraph G,Vertex TopOrder[])
+{
+    Queue Q = CreateQueue(G->Nv);
+    struct act V[N],V1; int Indegree[MaxVerNum]; PtrToAdjVNode W;
+    int i;
+    for(i=1;i<=G->Nv;i++)
+    {
+        V[i].Num=i;
+        Indegree[V[i].Num]=0;
+    }
+    for(i=1;i<=G->Nv;i++)
+    {
+        for(W=G->AdjList[V[i].Num].FirstEdge;W!=NULL;W=W->Next)
+        {
+            Indegree[W->V]++;
+        }
+    }
+    for(i=1;i<=G->Nv;i++)
+    {
+        V[i].Earliest=0;
+        if(Indegree[V[i].Num]==0)
+        {
+            Enqueue(Q,V[i]);
+        }
+    }
+    int cnt=0;
+    while(!IsEmpty(Q))
+    {
+        V1=Dequeue(Q);
+        TopOrder[cnt++]=V1.Num;
+        for(W=G->AdjList[V1.Num].FirstEdge;W!=NULL;W=W->Next)
+        {
+            if(V1.Earliest+W->Weight>V[W->V].Earliest)
+            {
+                V[W->V].Earliest=V1.Earliest+W->Weight;
+            }
+            if(--Indegree[W->V]==0)
+            {
+                Enqueue(Q,V[W->V]);
+            }
+        }
+    }
+    if(cnt!=G->Nv)
+    {
+        printf("0");
+        return False;
+    }
+    else
+    {
+        int i,mark,max=V[cnt].Earliest;
+        for(i=1;i<=G->Nv;i++)
+        {
+            if(V[i].Earliest>max)
+            {
+                mark=i;
+                max=V[i].Earliest;
+            }
+        }
+        printf("%d\n",max);
+        FindKeyAct(V,G,max);
+        return True;
+    }
+}
+void FindKeyAct(struct act V[],LGraph G,int max)
+{
+    int i,Indegree[N];
+    PtrToAdjVNode W;
+    Queue Q = CreateQueue(G->Nv);
+    for(i=1;i<=G->Nv;i++)
+    {
+        Indegree[V[i].Num]=0;
+    }
+    for(i=1;i<=G->Nv;i++)
+    {
+        for(W=G->AdjList[V[i].Num].FirstEdge;W!=NULL;W=W->Next)
+        {
+            Indegree[V[i].Num]++;
+        }
+    }
+    for(i=1;i<=G->Nv;i++)
+    {
+        if(Indegree[V[i].Num]==0)
+        {
+            V[i].Lastest=max;
+        }
+        else
+        {
+            V[i].Lastest=Infinity;
+        }
+        
+        if(Indegree[V[i].Num]==0)
+        {
+            Enqueue(Q,V[i]);
+        }
+    }
+    struct act V1;
+    while(!IsEmpty(Q))
+    {
+        V1=Dequeue(Q);
+        for(W=G->G2->AdjList[V1.Num].FirstEdge;W!=NULL;W=W->Next)
+        {
+            if(V1.Lastest-W->Weight<V[W->V].Lastest)
+            {
+                V[W->V].Lastest=V1.Lastest-W->Weight;
+            }
+            if(--Indegree[W->V]==0)
+            {
+                Enqueue(Q,V[W->V]);
+            }
+        }
+    }
+    for(i=1;i<=G->Nv;i++)
+    {
+        for(W=G->AdjList[V[i].Num].FirstEdge;W!=NULL;W=W->Next)
+        {
+            if(V[W->V].Lastest-V[i].Earliest==W->Weight)
+            {
+                printf("%d->%d\n",V[i].Num,W->V);
+            }
+        }
+    }
+}
+int main (int argc, char *argv[])
+{
+    LGraph G;
+    G=BuildGraph();
+    Vertex TopOrder[N];
+    TopSort(G, TopOrder);
+    return 0;
+}
