@@ -1,0 +1,49 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#define N 100000
+void ShellSort(int a[],int n)
+{
+    int D,d[N],P,tmp,i=0;
+    do
+    {
+        d[i]=(int)(pow(2,i+1)-1);
+        i++;
+    }while(d[i-1]<n);
+    int mark=i-2;
+    for(D=d[mark];mark>=0;mark--)
+    {
+        for(P=d[mark];P<n;P++)
+        {
+            tmp=a[P];
+            for(i=P;i>=d[mark]&&a[i-d[mark]]>tmp;i-=d[mark])
+            {
+                a[i]=a[i-d[mark]];
+            }
+            a[i]=tmp;
+        }
+    }
+}
+
+int main(int argc,char *argv[])
+{
+    int n,a[N],i;
+    scanf("%d",&n);
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    ShellSort(a,n);
+    printf("%d",a[0]);
+    for(i=1;i<n;i++)
+    {
+        printf(" %d",a[i]);
+    }
+}
