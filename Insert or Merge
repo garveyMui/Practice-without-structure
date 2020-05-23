@@ -1,0 +1,163 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define N 100000
+int InsertionSort(int a[],int n,int b[])
+{
+    int flag=1;
+    int p,tmp,i,j;
+    for(p=1;p<n&&flag!=3;p++)
+    {
+        tmp=a[p];
+        for(i=p;i>0&&tmp<a[i-1];i--)
+        {
+            a[i]=a[i-1];
+        }
+        a[i]=tmp;
+        for(j=0;j<n&&flag==1;j++)
+        {
+            if(a[j]!=b[j])
+            {
+                flag=0;
+                break;
+            }
+        }
+        if(flag==1||flag==2)
+            flag++;
+        if(flag==0)
+            flag=1;
+    }
+    return flag;
+}
+void Merge(int c[],int tmpA[],int l,int r,int rightEnd)
+{
+    
+    int leftEnd,numElements,tmp;
+    int i;
+    leftEnd=r-1;
+    tmp=l;
+    numElements=rightEnd-l+1;
+    while(l<=leftEnd&&r<=rightEnd)
+    {
+        if(c[l]<=c[r])
+        {
+            tmpA[tmp++]=c[l++];
+        }
+        else
+        {
+            tmpA[tmp++]=c[r++];
+        }
+    }
+    while(l<=leftEnd)
+        tmpA[tmp++]=c[l++];
+    while(r<=rightEnd)
+        tmpA[tmp++]=c[r++];
+    for(i=0;i<numElements;i++,rightEnd--)
+        c[rightEnd]=tmpA[rightEnd];
+}
+void MergePass(int c[],int tmpA[],int n,int length)
+{
+    int i,j;
+    for(i=0;i<=n-2*length;i+=2*length)
+        Merge(c, tmpA, i, i+length, i+2*length-1);
+    if(i+length<n)
+        Merge(c, tmpA, i, i+length, n-1);
+    else
+        for(j=i;j<n;j++)tmpA[j]=c[j];
+}
+void MergeSort(int c[],int n,int b[])
+{
+    int *tmpA,length=1,i,flag=1,f=0;
+    tmpA=(int*)malloc(n*sizeof(int));
+    while(length<n)
+    {
+        MergePass(c,tmpA,n,length);
+        length*=2;
+        if(flag==1&&f!=0)
+        {
+            printf("Merge Sort\n");
+            printf("%d",c[0]);
+            for(i=1;i<n;i++)
+            {
+               printf(" %d",c[i]);
+            }
+            break;
+        }
+        else
+        {
+            flag=1;
+        }
+        for(i=0;i<n;i++)
+        {
+            if(c[i]!=b[i])
+            {
+                flag=0;
+            }
+        }
+        f++;
+        MergePass(tmpA,c,n,length);
+        length*=2;
+        if(flag==1)
+        {
+            printf("Merge Sort\n");
+            printf("%d",c[0]);
+            for(i=1;i<n;i++)
+            {
+               printf(" %d",c[i]);
+            }
+            break;
+        }
+        else
+        {
+            flag=1;
+            for(i=0;i<n;i++)
+            {
+                if(c[i]!=b[i])
+                {
+                    flag=0;
+                }
+            }
+        }
+    }
+}
+int main(int argc, char *argv[])
+{
+    int n,a[N],b[N],c[N];
+    scanf("%d",&n);
+    int i;
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+        c[i]=a[i];
+    }
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&b[i]);
+    }
+    if(InsertionSort(a,n,b)==3)
+    {
+        printf("Insertion Sort\n");
+        printf("%d",a[0]);
+        for(i=1;i<n;i++)
+        {
+            printf(" %d",a[i]);
+        }
+    }
+    else
+    {
+        MergeSort(c,n,b);
+        
+        /*printf("%d",c[0]);
+        for(i=1;i<n;i++)
+        {
+            printf(" %d",c[i]);
+        }*/
+    }
+    return 0;
+}
