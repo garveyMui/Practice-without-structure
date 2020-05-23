@@ -1,0 +1,109 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define MaxDigit 2
+#define Radix 10
+#define N 100000
+typedef struct Node *PtrToNode;
+struct Node
+{
+    int key;
+    PtrToNode next;
+};
+struct HeadNode
+{
+    PtrToNode head,tail;
+};
+typedef struct HeadNode Bucket[Radix];
+
+int GetDigit(int X, int D)
+{
+    int d,i;
+    for(i=1;i<=D;i++)
+    {
+        d=X%Radix;
+        X/=Radix;
+    }
+    return d;
+}
+void LSDRadixSort(int a[], int n)
+{
+    int D,Di,i;
+    Bucket B;
+    PtrToNode tmp,p,List=NULL;
+    for(i=0;i<Radix;i++)
+    {
+        B[i].head=B[i].tail=NULL;
+    }
+    for(i=0;i<n;i++)
+    {
+        tmp=(PtrToNode)malloc(sizeof(struct Node));
+        tmp->key=a[i];
+        tmp->next=List;
+        List=tmp;
+    }
+    for(D=1;D<=MaxDigit;D++)
+    {
+        p=List;
+        while(p!=NULL)
+        {
+            Di=GetDigit(p->key, D);
+            tmp = p; p = p->next;
+            tmp->next=NULL;
+            if(B[Di].head==NULL)
+                B[Di].head=B[Di].tail=tmp;
+            else
+            {
+                B[Di].tail->next=tmp;
+                B[Di].tail=tmp;
+            }
+        }
+        List=NULL;
+        for(Di=Radix-1;Di>=0;Di--)
+        {
+            if(B[Di].head!=NULL)
+            {
+                B[Di].tail->next=List;
+                List=B[Di].head;
+                B[Di].head=B[Di].tail=NULL;
+            }
+        }
+    }
+    for(i=0;i<n;i++)
+    {
+        tmp=List;
+        List=List->next;
+        a[i]=tmp->key;
+        free(tmp);
+    }
+}
+int main(int argc, char *argv[])
+{
+    int n,a[N],i;
+    scanf("%d",&n);
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    LSDRadixSort(a,n);
+    int count=1;
+    for(i=0;i<n;i++)
+    {
+        if(a[i]==a[i+1])
+        {
+            count++;
+        }
+        else
+        {
+            printf("%d:%d\n",a[i],count);
+            count=1;
+        }
+    }
+    return 0;
+}
