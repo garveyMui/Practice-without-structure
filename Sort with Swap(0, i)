@@ -1,0 +1,132 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define N 100000
+void Swap(int *a, int *b)
+{
+    int tmp;
+    tmp=*a;
+    *a=*b;
+    *b=tmp;
+}
+void SortWithSwap(int a[], int n,int b[])
+{
+    int i,j=0,count=0,tmp;
+    tmp=b[0];
+    int flag=1;
+    while(flag==1)
+    {
+        flag=0;
+        while(a[0]!=0)
+        {
+            Swap(&a[b[tmp]],&a[tmp]);
+            a[tmp]=0;
+            count++;
+            tmp=b[tmp];
+          /*  printf("\n");
+            for(i=0;i<n;i++)
+                printf("%d ",a[i]);*/
+        }
+        for(i=j;i<n;i++)
+        {
+            if(a[i]!=0&&a[i]!=i)
+            {
+                j=i;
+                b[a[i]]=tmp;
+                Swap(&a[i],&a[tmp]);
+                count++;
+                tmp=i;
+                flag=1;
+                break;
+            }
+        }
+    }
+    printf("%d",count);
+}
+int main(int argc, char *argv[])
+{
+    int n;
+    scanf("%d",&n);
+    int i,a[N],b[N];
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+        b[a[i]]=i;
+    }
+    SortWithSwap(a,n,b);
+    return 0;
+}
+
+/*
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include<stdio.h>
+#include<stdlib.h>
+#define N 100000
+void Swap(int *a, int *b)
+{
+    int tmp;
+    tmp=*a;
+    *a=*b;
+    *b=tmp;
+}
+void SortWithSwap(int a[], int n,int b[])
+{
+    int i,j=0,count=0,tmp;
+    tmp=b[0];
+    int flag=1;
+    while(flag==1)
+    {
+        while(1)
+        {
+            if(tmp==0)
+                flag=0;
+          // Swap(&a[b[tmp]],&a[tmp]);
+            a[tmp]=0;
+            if(flag==0)
+                break;
+            count++;
+            tmp=b[tmp];
+        }
+        flag=0;
+        for(i=j;i<n;i++)
+        {
+            if(a[i]!=0&&a[i]!=i)
+            {
+                j=i;
+                b[a[i]]=tmp;
+               // Swap(&a[i],&a[tmp]);
+                count++;
+                tmp=i;
+                flag=1;
+                break;
+            }
+        }
+    }
+    printf("%d",count);
+}
+int main(int argc, char *argv[])
+{
+    int n;
+    scanf("%d",&n);
+    int i,a[N],b[N];
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+        b[a[i]]=i;
+    }
+    SortWithSwap(a,n,b);
+    return 0;
+}
+*/
