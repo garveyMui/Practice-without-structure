@@ -1,0 +1,42 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include <stdio.h>
+#include <stdlib.h>
+#define N 10000
+
+int MaxSubseqSum2(int a[],int n)
+{
+    int thisSum,maxSum=0;
+    int i,j;
+    for(i=0;i<n;i++)
+    {
+        thisSum=0;
+        for(j=i;j<n;j++)
+        {
+            thisSum+=a[j];
+            if(thisSum>maxSum)
+                maxSum=thisSum;
+        }
+    }
+    if(maxSum>0)
+        return maxSum;
+    else
+        return 0;
+}
+int main(int argc,char *argv[])
+{
+    int n,a[N];
+    scanf("%d",&n);
+    int i;
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    printf("%d",MaxSubseqSum2(a,n));
+    return 0;
+}
