@@ -1,0 +1,67 @@
+//
+//  main.c
+//  20200404
+//
+//  Created by 梅佳伟 on 2020/4/4.
+//  Copyright © 2020 梅佳伟. All rights reserved.
+//
+#include <stdio.h>
+#include <stdlib.h>
+#define N 10000
+
+int MaxSubseqSum3(int a[],int front,int rear)
+{
+    int Left,Right,Cross=0,thisSum=0,maxSum=0;
+    if(front<rear)
+    {
+        Left=MaxSubseqSum3(a, front, (front+rear)/2);
+        Right=MaxSubseqSum3(a, (front+rear)/2+1,rear);
+    }
+    if(front==rear)
+    {
+        return a[front];
+    }
+    int i,j;
+    for(i=(front+rear)/2;i>=front;i--)
+    {
+        thisSum+=a[i];
+        if(thisSum>Cross)
+            Cross=thisSum;
+    }
+    if(Cross>0)
+    thisSum=Cross;
+    for(j=(front+rear)/2+1;j<=rear;j++)
+    {
+        thisSum+=a[j];
+        if(thisSum>Cross)
+            Cross=thisSum;
+    }
+    if(Cross>Left)
+        if(Cross>Right)
+            maxSum=Cross;
+        else
+            maxSum=Right;
+    else
+        if(Left>Right)
+            maxSum=Left;
+        else
+            maxSum=Right;
+    return maxSum;
+}
+int main(int argc,char *argv[])
+{
+    int n,a[N];
+    scanf("%d",&n);
+    int i;
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&a[i]);
+    }
+    int max;
+    max=MaxSubseqSum3(a,0,n-1);
+    if(max>=0)
+        printf("%d",max);
+    else
+        printf("0");
+    return 0;
+}
