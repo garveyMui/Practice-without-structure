@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define N 500
+struct Poly{
+    int expo;
+    int coe;
+};
+struct Poly *Add(struct Poly a[],struct Poly b[])
+{
+    struct Poly *result=malloc(N*sizeof(struct Poly));
+    int i=1,j=1,k=1;
+    for(;i<=a[0].expo&&j<=b[0].expo;i++)
+    {
+        
+        if(a[i].expo>b[j].expo)
+        {
+            (result+k)->expo=a[i].expo;
+            (result+k)->coe=a[i].coe;
+            k++;
+        }else if(a[i].expo<b[j].expo)
+        {
+            (result+k)->expo=b[j].expo;
+            (result+k)->coe=b[j].coe;
+            k++;
+            j++;
+            i--;
+        }else
+        {
+            if(a[i].coe+b[j].coe!=0)
+            {
+                (result+k)->expo=b[j].expo;
+                (result+k)->coe=a[i].coe+b[j].coe;
+                k++;
+                j++;
+            }else
+            {
+                j++;
+            }
+        }
+    }
+    for(;i<=a[0].expo;i++)
+    {
+        (result+k)->expo=a[i].expo;
+        (result+k)->coe=a[i].coe;
+        k++;
+        //printf(" %d %d",a[i].coe,a[i].expo);
+    }
+    for(;j<=b[0].expo;j++)
+    {
+        (result+k)->expo=b[j].expo;
+        (result+k)->coe=b[j].coe;
+        k++;
+    }
+    result->expo=k-1;
+    return result;
+}
+struct Poly *Mul(struct Poly a[],struct Poly b[])
+{
+    struct Poly *result=malloc(N*sizeof(struct Poly));
+    struct Poly *tmp;
+    struct Poly result1[N];
+    int i,j;
+    result[0].expo=result1[0].expo=a[0].expo;
+    for(i=1;i<=a[0].expo;i++)
+    {
+        result[i].expo=a[i].expo+b[1].expo;
+        result[i].coe=a[i].coe*b[1].coe;
+    }
+    for(j=2;j<=b[0].expo;j++)
+    {
+        for(i=1;i<=a[0].expo;i++)
+        {
+            result1[i].expo=a[i].expo+b[j].expo;
+            result1[i].coe=a[i].coe*b[j].coe;
+        }
+        tmp=result;
+        result=Add(result, result1);
+        free(tmp);
+    }
+    return result;
+}
+int main()
+{
+    int i;
+    struct Poly a[N],b[N];
+    scanf("%d",&a[0].expo);
+    for(i=1;i<=a[0].expo;i++)
+    {
+        scanf("%d %d",&a[i].coe,&a[i].expo);
+    }
+    scanf("%d",&b[0].expo);
+    for(i=1;i<=b[0].expo;i++)
+    {
+        scanf("%d %d",&b[i].coe,&b[i].expo);
+    }
+    struct Poly *Result;
+    Result=Mul(a,b);
+    printf("%d %d",(Result+1)->coe,(Result+1)->expo);
+    for(i=2;i<=Result->expo;i++)
+    {
+        printf(" %d %d",(Result+i)->coe,(Result+i)->expo);
+    }
+    printf("\n");
+    Result=Add(a,b);
+    if(Result->expo>0)
+    {
+        printf("%d %d",(Result+1)->coe,(Result+1)->expo);
+        for(i=2;i<=Result->expo;i++)
+        {
+            printf(" %d %d",(Result+i)->coe,(Result+i)->expo);
+        }
+    }else
+    {
+        printf("0 0");
+    }    
+    return 0;
+}
