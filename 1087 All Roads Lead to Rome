@@ -1,0 +1,134 @@
+#include<iostream>
+#include<cstdio>
+#include<map>
+#include<string>
+#include<vector>
+#include<stack>
+#define N 200
+#define INFINITY 65535
+using namespace std;
+class Route {
+private:
+    int nv, ne;
+    int elem[N][N];
+    string start;
+    map <string, int> cityID;
+    map <int, string> cityName;
+    int happiness[N];    
+protected:
+    vector<int> path[N];
+    stack<int> s, s1;
+    int happy = 0, happy1 = 0;
+    int differentWays = 0;
+    void DFS(int cityEnd) {
+        s.push(cityEnd);
+        happy += happiness[cityEnd];
+        for (int i = 0; i < path[cityEnd].size(); i++) {
+            DFS(path[cityEnd].at(i));
+        }
+        if (cityEnd == 0) {
+            differentWays++;
+            if (happy1 <= happy) {
+                if (happy1 < happy) {
+                    happy1 = happy;
+                    s1 = s;
+                }
+                else {
+                    if (s1.size() > s.size()) {
+                        s1 = s;
+                    }
+                }
+            }
+        }
+        s.pop();
+        happy -= happiness[cityEnd];
+    }
+    int dijkstra() {
+        int dist[N]; bool visited[N];
+        fill(dist, dist + N, INFINITY);
+        fill(visited, visited + N, false);
+        dist[0] = 0;
+        while (true) {
+            int tmp = findMinDist(dist, visited);
+            if ((tmp == -1) || (cityName[tmp] == "ROM")) return dist[cityID["ROM"]];
+            else  visited[tmp] = true;                        
+            refresh(dist, visited, tmp);
+        }
+    }
+    int findMinDist(int dist[], bool visited[]) {
+        int min = INFINITY;
+        int minMark = -1;
+        for (int i = 0; i < nv; i++) {
+            if ((dist[i] < min) && (visited[i] == false)) {
+                minMark = i;
+                min = dist[i];
+            }
+        }
+        return minMark;
+    }
+    void refresh(int dist[], bool visited[], int city) {
+        for (int i = 0; i < nv; i++) {
+            if ((elem[city][i] < INFINITY) && (visited[i] == false)) {
+                if (dist[city] + elem[city][i] <= dist[i]) {
+                    if (dist[city] + elem[city][i] < dist[i]) {
+                        dist[i] = dist[city] + elem[city][i];
+                        path[i].clear();
+                        path[i].push_back(city);
+                    }
+                    else {
+                        path[i].push_back(city);
+                    }
+                }
+            }
+        }
+    }
+public:
+    Route(int n, int k) {
+        nv = n; ne = k;
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                elem[i][j] = INFINITY;
+            }
+        }
+    }
+    void collectHappiness() {
+        cin >> start;
+        cityID[start] = 0;
+        cityName[0] = start;
+        happiness[0] = 0;
+        for (int i = 1; i < nv; i++) {
+            string tmp;
+            cin >> tmp >> happiness[i];
+            cityID[tmp] = i;
+            cityName[i] = tmp;
+        }
+    }
+    void insert() {
+        for (int i = 0; i < ne; i++) {
+            string c1, c2; int cost;
+            cin >> c1 >> c2 >> cost;
+            elem[cityID[c1]][cityID[c2]] = cost;
+            elem[cityID[c2]][cityID[c1]] = cost;
+        }
+    }
+    void findRoute() {
+        int cost = dijkstra();
+        DFS(cityID["ROM"]);
+        cout << differentWays << " " << cost << " " << happy1 << " " << (happy1 / (s1.size() - 1)) << endl;
+        cout << cityName[s1.top()];
+        s1.pop();
+        while (s1.size()) {
+            cout << "->" << cityName[s1.top()];
+            s1.pop();
+        }
+    }    
+};
+int main() {
+    int n, k;
+    cin >> n >> k;
+    Route r(n, k);
+    r.collectHappiness();
+    r.insert();
+    r.findRoute();
+    return 0;
+}
