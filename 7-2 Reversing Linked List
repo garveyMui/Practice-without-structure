@@ -1,0 +1,77 @@
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+int reverse_segment(int, int);
+void show_list(int);
+int get_length(int);
+
+struct Node{
+    int data;
+    int index_next;
+};
+Node mem[100000];
+
+int main(){
+    unsigned int address_begin,number_total,number_k;
+    cin >> address_begin >> number_total >> number_k;
+    for(int i = 0; i < number_total; i++){
+        int index;
+        cin >> index;
+        cin >> mem[index].data >> mem[index].index_next;
+    }
+    int address = address_begin;
+    int pre_tail = -1;
+    number_total = get_length(address_begin);
+    int total_reverse = number_total/number_k;
+    for(int i = 0; i<total_reverse; i++){
+        if(pre_tail != -1){
+            mem[pre_tail].index_next = reverse_segment(address, number_k);
+        }else{
+            address_begin = reverse_segment(address, number_k);
+        }
+        pre_tail = address;
+        address = mem[address].index_next;
+    }
+    show_list(address_begin);
+    return 0;
+}
+int get_length(int address_begin){
+    int count = 0;
+    while(address_begin != -1){
+        count++;
+        address_begin = mem[address_begin].index_next;
+    }
+    return count;
+}
+int reverse_segment(int address_sub_begin, int length_sub){
+    int address_i,address_j,address_tmp;
+    address_j = address_sub_begin;
+    address_tmp = mem[address_j].index_next;
+    for(int i = 1; i < length_sub; i++){
+        address_i = address_j;
+        address_j = address_tmp;
+        address_tmp = mem[address_tmp].index_next;
+        mem[address_j].index_next = address_i;
+    }
+    mem[address_sub_begin].index_next = address_tmp;
+    return address_j;
+}
+void show_list(int begin){
+    for(int i = begin; i!=-1; i = mem[i].index_next){
+        try {
+            cout << setfill('0') << setw(5) << i;
+            cout << " ";
+            cout << mem[i].data;
+            cout << " ";
+            int next =  mem[i].index_next;
+            if(next != -1){
+                cout << setfill('0') << setw(5) << next << endl;
+            }else{
+                cout << -1;
+            }
+        } catch (std::exception e) {
+            continue;
+        }
+    }
+}
